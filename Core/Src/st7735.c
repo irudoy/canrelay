@@ -1,7 +1,6 @@
 /* vim: set ai et ts=4 sw=4: */
 #include "stm32f2xx_hal.h"
 #include "st7735.h"
-#include "malloc.h"
 
 #define DELAY 0x80
 
@@ -95,6 +94,28 @@ static void ST7735_WriteData(uint8_t* buff, size_t buff_size) {
     HAL_SPI_Transmit(&ST7735_SPI_PORT, buff, buff_size, HAL_MAX_DELAY);
 }
 
+static void ST7735_SendByte(uint8_t data) {
+  while ((SPI1->SR & SPI_SR_TXE) == RESET);
+  SPI1->DR = data;
+}
+
+static void ST7735_WaitLastData() {
+  while ((SPI1->SR & SPI_SR_TXE) == RESET);
+  while ((SPI1->SR & SPI_SR_BSY) != RESET);
+}
+
+static void ST7735_SendDataMultiple(uint16_t *data, uint16_t size) {
+  HAL_GPIO_WritePin(ST7735_DC_GPIO_Port, ST7735_DC_Pin, GPIO_PIN_SET);
+
+  for (uint32_t i = 0; i < size; i++) {
+    ST7735_SendByte(*data >> 8);
+    ST7735_SendByte(*data & 0xFF);
+    data++;
+  }
+
+  ST7735_WaitLastData();
+}
+
 static void ST7735_ExecuteCommandList(const uint8_t *addr) {
     uint8_t numCommands, numArgs;
     uint16_t ms;
@@ -108,13 +129,13 @@ static void ST7735_ExecuteCommandList(const uint8_t *addr) {
         // If high bit set, delay follows args
         ms = numArgs & DELAY;
         numArgs &= ~DELAY;
-        if(numArgs) {
+        if (numArgs) {
             ST7735_WriteData((uint8_t*)addr, numArgs);
             // ST7735_WriteData((uint8_t*)addr, sizeof(*addr));
             addr += numArgs;
         }
 
-        if(ms) {
+        if (ms) {
             ms = *addr++;
             if(ms == 255) ms = 500;
             HAL_Delay(ms);
@@ -147,84 +168,13 @@ void ST7735_Init() {
   ST7735_Unselect();
 }
 
-void ST7735_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
-  if((x >= ST7735_WIDTH) || (y >= ST7735_HEIGHT))
-    return;
+void ST7735_DrawImage(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t* data) {
+  uint8_t w = x2 - x1 + 1;
+  uint8_t h = y2 - y1 + 1;
 
   ST7735_Select();
-
-  ST7735_SetAddressWindow(x, y, x+1, y+1);
-  uint8_t data[] = { color >> 8, color & 0xFF };
-  ST7735_WriteData(data, sizeof(data));
-
-  ST7735_Unselect();
-}
-
-void ST7735_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
-    // clipping
-    if((x >= ST7735_WIDTH) || (y >= ST7735_HEIGHT)) return;
-    if((x + w - 1) >= ST7735_WIDTH) w = ST7735_WIDTH - x;
-    if((y + h - 1) >= ST7735_HEIGHT) h = ST7735_HEIGHT - y;
-
-    ST7735_Select();
-    ST7735_SetAddressWindow(x, y, x+w-1, y+h-1);
-
-    uint8_t data[] = { color >> 8, color & 0xFF };
-    HAL_GPIO_WritePin(ST7735_DC_GPIO_Port, ST7735_DC_Pin, GPIO_PIN_SET);
-    for(y = h; y > 0; y--) {
-        for(x = w; x > 0; x--) {
-            HAL_SPI_Transmit(&ST7735_SPI_PORT, data, sizeof(data), HAL_MAX_DELAY);
-        }
-    }
-
-    ST7735_Unselect();
-}
-
-//void ST7735_FillRectangleFast(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
-//    // clipping
-//    if((x >= ST7735_WIDTH) || (y >= ST7735_HEIGHT)) return;
-//    if((x + w - 1) >= ST7735_WIDTH) w = ST7735_WIDTH - x;
-//    if((y + h - 1) >= ST7735_HEIGHT) h = ST7735_HEIGHT - y;
-//
-//    ST7735_Select();
-//    ST7735_SetAddressWindow(x, y, x+w-1, y+h-1);
-//
-//    // Prepare whole line in a single buffer
-//    uint8_t pixel[] = { color >> 8, color & 0xFF };
-//    uint8_t *line = malloc(w * sizeof(pixel));
-//    for(x = 0; x < w; ++x)
-//      memcpy(line + x * sizeof(pixel), pixel, sizeof(pixel));
-//
-//    HAL_GPIO_WritePin(ST7735_DC_GPIO_Port, ST7735_DC_Pin, GPIO_PIN_SET);
-//    for(y = h; y > 0; y--)
-//        HAL_SPI_Transmit(&ST7735_SPI_PORT, line, w * sizeof(pixel), HAL_MAX_DELAY);
-//
-//    free(line);
-//    ST7735_Unselect();
-//}
-
-void ST7735_FillScreen(uint16_t color) {
-  ST7735_FillRectangle(0, 0, ST7735_WIDTH, ST7735_HEIGHT, color);
-}
-
-//void ST7735_FillScreenFast(uint16_t color) {
-//  ST7735_FillRectangleFast(0, 0, ST7735_WIDTH, ST7735_HEIGHT, color);
-//}
-
-void ST7735_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* data) {
-  if((x >= ST7735_WIDTH) || (y >= ST7735_HEIGHT)) return;
-  if((x + w - 1) >= ST7735_WIDTH) return;
-  if((y + h - 1) >= ST7735_HEIGHT) return;
-
-  ST7735_Select();
-  ST7735_SetAddressWindow(x, y, x+w-1, y+h-1);
-  ST7735_WriteData((uint8_t*)data, sizeof(uint16_t)*w*h);
-  ST7735_Unselect();
-}
-
-void ST7735_InvertColors(uint8_t invert) {
-  ST7735_Select();
-  ST7735_WriteCommand(invert ? ST7735_INVON : ST7735_INVOFF);
+  ST7735_SetAddressWindow(x1, y1, x2, y2);
+  ST7735_SendDataMultiple(data, w * h);
   ST7735_Unselect();
 }
 

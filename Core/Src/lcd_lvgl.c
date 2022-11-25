@@ -3,17 +3,12 @@
 #include "../../lvgl/lvgl.h"
 #include "st7735.h"
 
-// display driver struct
 static lv_disp_drv_t disp_drv;
 
 static lv_color_t disp_buf1[DISP_HOR_RES * 10];
 static lv_color_t disp_buf2[DISP_HOR_RES * 10];
 
-static volatile uint32_t t_saved = 0;
-
-void monitor_cb(lv_disp_drv_t * d, uint32_t t, uint32_t p) {
-  t_saved = t;
-}
+uint16_t display_fb[DISP_HOR_RES * 1];
 
 static void tft_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_p);
 
@@ -23,11 +18,9 @@ void Display_init() {
   lv_disp_drv_init(&disp_drv);
 
   ST7735_Init();
-  ST7735_FillScreen(ST7735_BLACK);
 
   disp_drv.draw_buf = &buf;
   disp_drv.flush_cb = tft_flush;
-  disp_drv.monitor_cb = monitor_cb;
   disp_drv.hor_res = DISP_HOR_RES;
   disp_drv.ver_res = DISP_VER_RES;
   lv_disp_drv_register(&disp_drv);
@@ -43,13 +36,23 @@ void Display_init() {
  */
 static void tft_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_p)
 {
-  // The most simple case (but also the slowest) to put all pixels to the screen one-by-one
-  int32_t x, y;
+  if (area->x2 < 0) return;
+  if (area->y2 < 0) return;
+  if (area->x1 > DISP_HOR_RES - 1) return;
+  if (area->y1 > DISP_VER_RES - 1) return;
+
+  uint8_t x, y;
+  uint8_t i = 0;
+
   for (y = area->y1; y <= area->y2; y++) {
     for (x = area->x1; x <= area->x2; x++) {
-      ST7735_DrawPixel(x, y, color_p->full);
+      // ST7735_DrawPixel(x, y, color_p->full);
+      display_fb[i] = color_p->full;
       color_p++;
+      i++;
     }
+    i = 0;
+    ST7735_DrawImage(area->x1, y, area->x2, y, display_fb);
   }
 
   /* IMPORTANT!!!

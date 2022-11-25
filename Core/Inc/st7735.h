@@ -1,4 +1,3 @@
-/* vim: set ai et ts=4 sw=4: */
 #ifndef __ST7735_H__
 #define __ST7735_H__
 
@@ -111,13 +110,7 @@ typedef enum {
 void ST7735_Unselect();
 
 void ST7735_Init(void);
-void ST7735_DrawPixel(uint16_t x, uint16_t y, uint16_t color);
-void ST7735_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
-void ST7735_FillRectangleFast(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
-void ST7735_FillScreen(uint16_t color);
-void ST7735_FillScreenFast(uint16_t color);
-void ST7735_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* data);
-void ST7735_InvertColors(uint8_t invert);
+void ST7735_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t* data);
 void ST7735_SetGamma(GammaDef gamma);
 
 #endif // __ST7735_H__
