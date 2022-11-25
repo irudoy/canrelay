@@ -126,22 +126,11 @@ int main(void)
   HAL_GPIO_TogglePin(RELAY_GPIO_Port, RELAY_Pin);
 
   lv_init();
-  Display_init(0);
-  HAL_Delay(500); // remove?
+  Display_init();
+
+  // HAL_Delay(500);
 
   lv_example_anim_2();
-
-  // ST7735_FillScreen(ST7735_BLACK);
-  // ST7735_WriteString(0, 0, "Font_7x10, red on black, lorem ipsum dolor sit amet", Font_7x10, ST7735_RED, ST7735_BLACK);
-  // ST7735_WriteString(0, 3*10, "Font_11x18, green, lorem ipsum", Font_11x18, ST7735_GREEN, ST7735_BLACK);
-  // ST7735_WriteString(0, 3*10+3*18, "Font_16x26", Font_16x26, ST7735_BLUE, ST7735_BLACK);
-
-  // for (int i = 0; i < 10; i++) {
-  //   HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
-  //   HAL_Delay(50);
-  //   HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_2);
-  //   HAL_Delay(50);
-  // }
 
   /* USER CODE END 2 */
 
@@ -170,101 +159,9 @@ int main(void)
       HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_2);
     }
 
-    HAL_Delay(10); // remove?
+    // HAL_Delay(10);
+
     lv_task_handler();
-    
-
-//     (TIM3->CNT < 1023) {
-//      lcdBrPWMDC = ((TIM3->CNT) << 6);
-//    }
-//    TIM5->CCR1 = lcdBrPWMDC;if
-
-//    while (CH1_DC < 65535) {
-//        TIM5->CCR1 = CH1_DC;
-//        CH1_DC += 50;
-//        if (CH1_DC > 65535) {
-//          CH1_DC = 65535;
-//        }
-//        HAL_Delay(1);
-//    }
-//
-//    while (CH1_DC > 0) {
-//        TIM5->CCR1 = CH1_DC;
-//        CH1_DC -= 50;
-//        if (CH1_DC < 0) {
-//          CH1_DC = 0;
-//        }
-//        HAL_Delay(1);
-//    }
-//
-//    ST7735_FillScreen(ST7735_BLACK);
-//
-//    for (int i = 0; i < 100; i++) {
-//      TIM5->CCR1 = 65535 - (i * (65535 / 100));
-//
-//      sprintf(buf, "%d", i + 1);
-//      ST7735_WriteString(80 - 16, 40 - 14, buf, Font_16x26, ST7735_WHITE, ST7735_BLACK);
-//      HAL_Delay(100);
-//    }
-//    TIM5->CCR1 = 0;
-//    HAL_Delay(1000);
-//
-//    ST7735_FillScreen(ST7735_BLACK);
-//
-//    for(int x = 0; x < ST7735_WIDTH; x++) {
-//        ST7735_DrawPixel(x, 0, ST7735_RED);
-//        ST7735_DrawPixel(x, ST7735_HEIGHT-1, ST7735_RED);
-//    }
-//
-//    for(int y = 0; y < ST7735_HEIGHT; y++) {
-//        ST7735_DrawPixel(0, y, ST7735_RED);
-//        ST7735_DrawPixel(ST7735_WIDTH-1, y, ST7735_RED);
-//    }
-//
-//    HAL_Delay(3000);
-//
-//    // Check fonts
-//    ST7735_FillScreen(ST7735_BLACK);
-//    ST7735_WriteString(0, 0, "Font_7x10, red on black, lorem ipsum dolor sit amet", Font_7x10, ST7735_RED, ST7735_BLACK);
-//    ST7735_WriteString(0, 3*10, "Font_11x18, green, lorem ipsum", Font_11x18, ST7735_GREEN, ST7735_BLACK);
-//    ST7735_WriteString(0, 3*10+3*18, "Font_16x26", Font_16x26, ST7735_BLUE, ST7735_BLACK);
-//    HAL_Delay(2000);
-//
-//    // Check colors
-//    ST7735_FillScreen(ST7735_BLACK);
-//    ST7735_WriteString(0, 0, "BLACK", Font_11x18, ST7735_WHITE, ST7735_BLACK);
-//    HAL_Delay(500);
-//
-//    ST7735_FillScreen(ST7735_BLUE);
-//    ST7735_WriteString(0, 0, "BLUE", Font_11x18, ST7735_BLACK, ST7735_BLUE);
-//    HAL_Delay(500);
-//
-//    ST7735_FillScreen(ST7735_RED);
-//    ST7735_WriteString(0, 0, "RED", Font_11x18, ST7735_BLACK, ST7735_RED);
-//    HAL_Delay(500);
-//
-//    ST7735_FillScreen(ST7735_GREEN);
-//    ST7735_WriteString(0, 0, "GREEN", Font_11x18, ST7735_BLACK, ST7735_GREEN);
-//    HAL_Delay(500);
-//
-//    ST7735_FillScreen(ST7735_CYAN);
-//    ST7735_WriteString(0, 0, "CYAN", Font_11x18, ST7735_BLACK, ST7735_CYAN);
-//    HAL_Delay(500);
-//
-//    ST7735_FillScreen(ST7735_MAGENTA);
-//    ST7735_WriteString(0, 0, "MAGENTA", Font_11x18, ST7735_BLACK, ST7735_MAGENTA);
-//    HAL_Delay(500);
-//
-//    ST7735_FillScreen(ST7735_YELLOW);
-//    ST7735_WriteString(0, 0, "YELLOW", Font_11x18, ST7735_BLACK, ST7735_YELLOW);
-//    HAL_Delay(500);
-//
-//    ST7735_FillScreen(ST7735_WHITE);
-//    ST7735_WriteString(0, 0, "WHITE", Font_11x18, ST7735_BLACK, ST7735_WHITE);
-//    HAL_Delay(500);
-//
-//    ST7735_FillScreen(ST7735_RED);
-//    HAL_Delay(500);
 
 
     /* USER CODE END WHILE */

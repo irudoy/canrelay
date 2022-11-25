@@ -17,7 +17,7 @@ void monitor_cb(lv_disp_drv_t * d, uint32_t t, uint32_t p) {
 
 static void tft_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_p);
 
-void Display_init(int rotation) {
+void Display_init() {
   static lv_disp_draw_buf_t buf;
   lv_disp_draw_buf_init(&buf, disp_buf1, disp_buf2, DISP_HOR_RES * 10);
   lv_disp_drv_init(&disp_drv);
@@ -30,7 +30,6 @@ void Display_init(int rotation) {
   disp_drv.monitor_cb = monitor_cb;
   disp_drv.hor_res = DISP_HOR_RES;
   disp_drv.ver_res = DISP_VER_RES;
-  disp_drv.rotated = rotation;
   lv_disp_drv_register(&disp_drv);
 }
 
