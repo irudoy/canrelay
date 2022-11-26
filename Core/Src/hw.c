@@ -11,11 +11,11 @@ void HW_Init() {
   HAL_TIM_PWM_Start(&HW_LCD_LED_PWM_TIM, HW_LCD_LED_PWM_TIM_CHANNEL);
   HAL_TIM_Encoder_Start(&HW_ENCODER_TIM, HW_ENCODER_TIM_CHANNEL);
 
-  HAL_GPIO_TogglePin(HW_RELAY_PORT, HW_RELAY_PIN);
+  HW_RelayToggle();
   HAL_Delay(500);
-  HAL_GPIO_TogglePin(HW_RELAY_PORT, HW_RELAY_PIN);
+  HW_RelayToggle();
   HAL_Delay(500);
-  HAL_GPIO_TogglePin(HW_RELAY_PORT, HW_RELAY_PIN);
+  HW_RelayToggle();
 }
 
 void HW_Tick() {
@@ -46,6 +46,10 @@ void HW_Buzz() {
   HAL_TIM_PWM_Start_IT(&HW_BUZZER_TIM, HW_BUZZER_TIM_CHANNEL);
 }
 
+void HW_RelayToggle() {
+  HAL_GPIO_TogglePin(HW_RELAY_PORT, HW_RELAY_PIN);
+}
+
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == HW_BUZZER_TIM_INSTANCE && htim->Channel == HW_BUZZER_TIM_ACTIVE_CHANNEL) {
     buzzerPWMPulseCount++;
@@ -53,5 +57,12 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
       HAL_TIM_PWM_Stop_IT(&HW_BUZZER_TIM, HW_BUZZER_TIM_CHANNEL);
       buzzerPWMPulseCount = 0;
     }
+  }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+  if (GPIO_Pin == HW_ENCODER_BTN_PIN) {
+    HW_Buzz();
+    HW_RelayToggle();
   }
 }

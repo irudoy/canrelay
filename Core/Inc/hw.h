@@ -10,6 +10,9 @@
 #define HW_LCD_LED_PWM_TIM_INSTANCE TIM5
 #define HW_LCD_LED_PWM_TIM_CHANNEL TIM_CHANNEL_1
 
+#define HW_ENCODER_BTN_PORT ENC_BTN_GPIO_Port
+#define HW_ENCODER_BTN_PIN ENC_BTN_Pin
+
 #define HW_ENCODER_TIM htim3
 #define HW_ENCODER_TIM_INSTANCE TIM3
 #define HW_ENCODER_TIM_CHANNEL TIM_CHANNEL_ALL
@@ -25,9 +28,10 @@ extern TIM_HandleTypeDef HW_BUZZER_TIM;
 
 void HW_Init();
 void HW_Tick();
-
 void HW_Buzz();
+void HW_RelayToggle();
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 
 #endif /* INC_HW_H_ */
