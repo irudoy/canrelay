@@ -13,8 +13,6 @@ uint16_t display_fb[DISP_HOR_RES * 1];
 static void tft_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_p);
 
 void LCD_Init() {
-  lv_init();
-
   static lv_disp_draw_buf_t buf;
   lv_disp_draw_buf_init(&buf, disp_buf1, disp_buf2, DISP_HOR_RES * 10);
   lv_disp_drv_init(&disp_drv);

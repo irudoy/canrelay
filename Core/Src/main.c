@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "../../lvgl/lvgl.h"
 #include "lcd_lvgl.h"
 #include "hw.h"
 #include "ui.h"
@@ -101,6 +102,7 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
+  lv_init(); // should init first for msg handlers
   HW_Init();
   LCD_Init();
   UI_Init();

@@ -1,11 +1,16 @@
 #include "hw.h"
-#include "ui.h"
+#include "msg.h"
 #include "stm32f2xx_hal.h"
 #include "../../lvgl/lvgl.h"
 
 int32_t lcdBrPWMDC = 0;
 int32_t encoderPrevCount = 0;
 int32_t buzzerPWMPulseCount = 0;
+
+static void encoderInteractCallback(void * s, lv_msg_t * m);
+static void encoderPrevCallback(void * s, lv_msg_t * m);
+static void encoderNextCallback(void * s, lv_msg_t * m);
+static void encoderPressCallback(void * s, lv_msg_t * m);
 
 void HW_Init() {
   HAL_TIM_PWM_Start(&HW_LCD_LED_PWM_TIM, HW_LCD_LED_PWM_TIM_CHANNEL);
@@ -16,29 +21,55 @@ void HW_Init() {
   HW_RelayToggle();
   HAL_Delay(500);
   HW_RelayToggle();
+
+  lv_msg_subsribe(MSG_INPUT_PREV, encoderInteractCallback, NULL);
+  lv_msg_subsribe(MSG_INPUT_NEXT, encoderInteractCallback, NULL);
+  lv_msg_subsribe(MSG_INPUT_PRESS, encoderInteractCallback, NULL);
+
+  lv_msg_subsribe(MSG_INPUT_PREV, encoderPrevCallback, NULL);
+  lv_msg_subsribe(MSG_INPUT_NEXT, encoderNextCallback, NULL);
+  lv_msg_subsribe(MSG_INPUT_PRESS, encoderPressCallback, NULL);
+
+  lv_msg_send(MSG_DEBUG_LCD_BR_PWM, &lcdBrPWMDC);
+}
+
+static void encoderInteractCallback(void * s, lv_msg_t * m) {
+  LV_UNUSED(s);
+  LV_UNUSED(m);
+  HW_Buzz();
+}
+
+static void encoderPrevCallback(void * s, lv_msg_t * m) {
+  LV_UNUSED(s);
+  LV_UNUSED(m);
+  HW_LCDBrightnessDecrease();
+}
+
+static void encoderNextCallback(void * s, lv_msg_t * m) {
+  LV_UNUSED(s);
+  LV_UNUSED(m);
+  HW_LCDBrightnessIncrease();
+}
+
+static void encoderPressCallback(void * s, lv_msg_t * m) {
+  LV_UNUSED(s);
+  LV_UNUSED(m);
+  HW_RelayToggle();
 }
 
 void HW_Tick() {
   if (HW_ENCODER_TIM_INSTANCE->CNT != encoderPrevCount && HW_ENCODER_TIM_INSTANCE->CNT % 4 == 0) {
-    uint32_t timValue = HW_ENCODER_TIM_INSTANCE->CNT;
-    if (timValue > encoderPrevCount) {
-      lcdBrPWMDC -= 2000;
-      if (lcdBrPWMDC < 0) {
-        lcdBrPWMDC = 0;
-      }
+    if (encoderPrevCount == 0 && HW_ENCODER_TIM_INSTANCE->CNT == 65532) {
+      lv_msg_send(MSG_INPUT_PREV, NULL);
+    } else if (encoderPrevCount == 65532 && HW_ENCODER_TIM_INSTANCE->CNT == 0) {
+      lv_msg_send(MSG_INPUT_NEXT, NULL);
+    } else if (HW_ENCODER_TIM_INSTANCE->CNT > encoderPrevCount) {
+      lv_msg_send(MSG_INPUT_NEXT, NULL);
     } else {
-      lcdBrPWMDC += 2000;
-      if (lcdBrPWMDC > 65535) {
-        lcdBrPWMDC = 65535;
-      }
+      lv_msg_send(MSG_INPUT_PREV, NULL);
     }
-
-    HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 = lcdBrPWMDC;
-    HW_BUZZER_TIM_INSTANCE->CCR1 = lcdBrPWMDC; // buzzer
-    encoderPrevCount = timValue;
-
-    lv_msg_send(MSG_TIMER_CHANGED, &timValue);
-    HW_Buzz();
+    encoderPrevCount = HW_ENCODER_TIM_INSTANCE->CNT;
+    lv_msg_send(MSG_DEBUG_ENC_VAL, &encoderPrevCount);
   }
 }
 
@@ -48,6 +79,26 @@ void HW_Buzz() {
 
 void HW_RelayToggle() {
   HAL_GPIO_TogglePin(HW_RELAY_PORT, HW_RELAY_PIN);
+}
+
+void HW_LCDBrightnessIncrease() {
+  lcdBrPWMDC -= 4369;
+  if (lcdBrPWMDC < 4369) {
+    lcdBrPWMDC = 0;
+  }
+  HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 = lcdBrPWMDC;
+
+  lv_msg_send(MSG_DEBUG_LCD_BR_PWM, &lcdBrPWMDC);
+}
+
+void HW_LCDBrightnessDecrease() {
+  lcdBrPWMDC += 4369;
+  if (lcdBrPWMDC >= 61166) {
+    lcdBrPWMDC = 61166;
+  }
+  HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 = lcdBrPWMDC;
+
+  lv_msg_send(MSG_DEBUG_LCD_BR_PWM, &lcdBrPWMDC);
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
@@ -62,7 +113,6 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == HW_ENCODER_BTN_PIN) {
-    HW_Buzz();
-    HW_RelayToggle();
+    lv_msg_send(MSG_INPUT_PRESS, NULL);
   }
 }

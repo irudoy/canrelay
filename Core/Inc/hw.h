@@ -30,6 +30,8 @@ void HW_Init();
 void HW_Tick();
 void HW_Buzz();
 void HW_RelayToggle();
+void HW_LCDBrightnessIncrease();
+void HW_LCDBrightnessDecrease();
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
