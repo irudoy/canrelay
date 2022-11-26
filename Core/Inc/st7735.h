@@ -12,6 +12,7 @@
 #define ST7735_MADCTL_MH  0x04
 
 /*** Redefine if necessary ***/
+#define ST7735_SPI_HANDLE SPI1
 #define ST7735_SPI_PORT hspi1
 extern SPI_HandleTypeDef ST7735_SPI_PORT;
 
@@ -30,7 +31,7 @@ extern SPI_HandleTypeDef ST7735_SPI_PORT;
 #define ST7735_HEIGHT 80
 #define ST7735_ROTATION (ST7735_MADCTL_MX | ST7735_MADCTL_MV | ST7735_MADCTL_BGR)
 
-// mini 160x80, rotate right 
+// mini 160x80, rotate right
 
 //#define ST7735_XSTART 1
 //#define ST7735_YSTART 26

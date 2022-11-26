@@ -94,13 +94,13 @@ static void ST7735_WriteData(uint8_t* buff, size_t buff_size) {
 }
 
 static void ST7735_SendByte(uint8_t data) {
-  while ((SPI1->SR & SPI_SR_TXE) == RESET);
-  SPI1->DR = data;
+  while ((ST7735_SPI_HANDLE->SR & SPI_SR_TXE) == RESET);
+  ST7735_SPI_HANDLE->DR = data;
 }
 
 static void ST7735_WaitLastData() {
-  while ((SPI1->SR & SPI_SR_TXE) == RESET);
-  while ((SPI1->SR & SPI_SR_BSY) != RESET);
+  while ((ST7735_SPI_HANDLE->SR & SPI_SR_TXE) == RESET);
+  while ((ST7735_SPI_HANDLE->SR & SPI_SR_BSY) != RESET);
 }
 
 static void ST7735_SendDataMultiple(uint16_t *data, uint16_t size) {
