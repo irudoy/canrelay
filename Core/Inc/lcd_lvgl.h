@@ -6,6 +6,7 @@
 #define DISP_HOR_RES 160
 #define DISP_VER_RES 80
 
-void Display_init();
+void LCD_Init();
+void LCD_Tick();
 
 #endif /* INC_LCD_LVGL_H_ */
