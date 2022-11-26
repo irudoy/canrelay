@@ -11,6 +11,7 @@ static void encoderInteractCallback(void * s, lv_msg_t * m);
 static void encoderPrevCallback(void * s, lv_msg_t * m);
 static void encoderNextCallback(void * s, lv_msg_t * m);
 static void encoderPressCallback(void * s, lv_msg_t * m);
+static void encoderLongPressCallback(void * s, lv_msg_t * m);
 
 void HW_Init() {
   HAL_TIM_PWM_Start(&HW_LCD_LED_PWM_TIM, HW_LCD_LED_PWM_TIM_CHANNEL);
@@ -25,12 +26,15 @@ void HW_Init() {
   lv_msg_subsribe(MSG_INPUT_PREV, encoderInteractCallback, NULL);
   lv_msg_subsribe(MSG_INPUT_NEXT, encoderInteractCallback, NULL);
   lv_msg_subsribe(MSG_INPUT_PRESS, encoderInteractCallback, NULL);
+  lv_msg_subsribe(MSG_INPUT_LONG_PRESS, encoderInteractCallback, NULL);
 
   lv_msg_subsribe(MSG_INPUT_PREV, encoderPrevCallback, NULL);
   lv_msg_subsribe(MSG_INPUT_NEXT, encoderNextCallback, NULL);
   lv_msg_subsribe(MSG_INPUT_PRESS, encoderPressCallback, NULL);
+  lv_msg_subsribe(MSG_INPUT_LONG_PRESS, encoderLongPressCallback, NULL);
 
-  lv_msg_send(MSG_DEBUG_LCD_BR_PWM, &lcdBrPWMDC);
+  // dirty timer status reset, fixes strange first-long-press issue
+  HW_ENCODER_COUNT_TIM_INSTANCE->SR = 0;
 }
 
 static void encoderInteractCallback(void * s, lv_msg_t * m) {
@@ -52,6 +56,13 @@ static void encoderNextCallback(void * s, lv_msg_t * m) {
 }
 
 static void encoderPressCallback(void * s, lv_msg_t * m) {
+  LV_UNUSED(s);
+  LV_UNUSED(m);
+  lcdBrPWMDC = 61166;
+  HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 = lcdBrPWMDC;
+}
+
+static void encoderLongPressCallback(void * s, lv_msg_t * m) {
   LV_UNUSED(s);
   LV_UNUSED(m);
   HW_RelayToggle();
@@ -113,6 +124,25 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == HW_ENCODER_BTN_PIN) {
-    lv_msg_send(MSG_INPUT_PRESS, NULL);
+    if ((HW_ENCODER_BTN_PORT->IDR & HW_ENCODER_BTN_PIN) != (uint32_t)GPIO_PIN_RESET) {
+      if (HW_ENCODER_COUNT_TIM_INSTANCE->CNT > 0) {
+        lv_msg_send(MSG_INPUT_PRESS, NULL);
+      }
+      __HAL_TIM_DISABLE_IT(&HW_ENCODER_COUNT_TIM, TIM_IT_UPDATE);
+      __HAL_TIM_DISABLE(&HW_ENCODER_COUNT_TIM);
+      HW_ENCODER_COUNT_TIM_INSTANCE->CNT = 0;
+    } else { // LO
+      __HAL_TIM_ENABLE_IT(&HW_ENCODER_COUNT_TIM, TIM_IT_UPDATE);
+      __HAL_TIM_ENABLE(&HW_ENCODER_COUNT_TIM);
+    }
+  }
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+  if (htim->Instance == HW_ENCODER_COUNT_TIM_INSTANCE) {
+    lv_msg_send(MSG_INPUT_LONG_PRESS, NULL);
+    __HAL_TIM_DISABLE_IT(&HW_ENCODER_COUNT_TIM, TIM_IT_UPDATE);
+    __HAL_TIM_DISABLE(&HW_ENCODER_COUNT_TIM);
+    HW_ENCODER_COUNT_TIM_INSTANCE->CNT = 0;
   }
 }
