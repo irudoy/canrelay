@@ -4,21 +4,31 @@
 static void set_value(void * bar, int32_t v);
 static void event_cb(lv_event_t * e);
 
-void UI_Init() {
-  lv_obj_t * bar = lv_bar_create(lv_scr_act());
-  lv_obj_add_event_cb(bar, event_cb, LV_EVENT_DRAW_PART_END, NULL);
-  lv_obj_set_size(bar, 150, 20);
-  lv_obj_center(bar);
+static void label_event_cb(lv_event_t * e);
 
-  lv_anim_t a;
-  lv_anim_init(&a);
-  lv_anim_set_var(&a, bar);
-  lv_anim_set_values(&a, 0, 100);
-  lv_anim_set_exec_cb(&a, set_value);
-  lv_anim_set_time(&a, 2000);
-  lv_anim_set_playback_time(&a, 2000);
-  lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
-  lv_anim_start(&a);
+void UI_Init() {
+  lv_obj_t * label1 = lv_label_create(lv_scr_act());
+  lv_label_set_text(label1, "test");
+  lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
+  lv_obj_align(label1, LV_ALIGN_CENTER, 0, 0);
+
+  lv_obj_add_event_cb(label1, label_event_cb, LV_EVENT_MSG_RECEIVED, NULL);
+  lv_msg_subsribe_obj(MSG_TIMER_CHANGED, label1, "%d");
+
+  // lv_obj_t * bar = lv_bar_create(lv_scr_act());
+  // lv_obj_add_event_cb(bar, event_cb, LV_EVENT_DRAW_PART_END, NULL);
+  // lv_obj_set_size(bar, 150, 20);
+  // lv_obj_center(bar);
+
+  // lv_anim_t a;
+  // lv_anim_init(&a);
+  // lv_anim_set_var(&a, bar);
+  // lv_anim_set_values(&a, 0, 100);
+  // lv_anim_set_exec_cb(&a, set_value);
+  // lv_anim_set_time(&a, 2000);
+  // lv_anim_set_playback_time(&a, 2000);
+  // lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+  // lv_anim_start(&a);
 
   // example
   //  lv_obj_t * obj = lv_obj_create(lv_scr_act());
@@ -46,6 +56,16 @@ void UI_Init() {
   // example
 
   // lv_example_menu_3();
+}
+
+static void label_event_cb(lv_event_t * e) {
+    lv_obj_t * label = lv_event_get_target(e);
+    lv_msg_t * m = lv_event_get_msg(e);
+
+    const char * fmt = lv_msg_get_user_data(m);
+    const uint32_t * v = lv_msg_get_payload(m);
+
+    lv_label_set_text_fmt(label, fmt, *v);
 }
 
 static void set_value(void * bar, int32_t v) {
