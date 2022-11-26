@@ -17,6 +17,7 @@
 #define HW_BUZZER_TIM htim8
 #define HW_BUZZER_TIM_INSTANCE TIM8
 #define HW_BUZZER_TIM_CHANNEL TIM_CHANNEL_2
+#define HW_BUZZER_TIM_ACTIVE_CHANNEL HAL_TIM_ACTIVE_CHANNEL_2
 
 extern TIM_HandleTypeDef HW_LCD_LED_PWM_TIM;
 extern TIM_HandleTypeDef HW_ENCODER_TIM;
@@ -24,5 +25,9 @@ extern TIM_HandleTypeDef HW_BUZZER_TIM;
 
 void HW_Init();
 void HW_Tick();
+
+void HW_Buzz();
+
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim);
 
 #endif /* INC_HW_H_ */

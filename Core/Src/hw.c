@@ -5,6 +5,7 @@
 
 int32_t lcdBrPWMDC = 0;
 int32_t encoderPrevCount = 0;
+int32_t buzzerPWMPulseCount = 0;
 
 void HW_Init() {
   HAL_TIM_PWM_Start(&HW_LCD_LED_PWM_TIM, HW_LCD_LED_PWM_TIM_CHANNEL);
@@ -36,10 +37,21 @@ void HW_Tick() {
     HW_BUZZER_TIM_INSTANCE->CCR1 = lcdBrPWMDC; // buzzer
     encoderPrevCount = timValue;
 
-    HAL_TIM_PWM_Start(&HW_BUZZER_TIM, HW_BUZZER_TIM_CHANNEL);
-    HAL_Delay(50);
-    HAL_TIM_PWM_Stop(&HW_BUZZER_TIM, HW_BUZZER_TIM_CHANNEL);
-
     lv_msg_send(MSG_TIMER_CHANGED, &timValue);
+    HW_Buzz();
+  }
+}
+
+void HW_Buzz() {
+  HAL_TIM_PWM_Start_IT(&HW_BUZZER_TIM, HW_BUZZER_TIM_CHANNEL);
+}
+
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
+  if (htim->Instance == HW_BUZZER_TIM_INSTANCE && htim->Channel == HW_BUZZER_TIM_ACTIVE_CHANNEL) {
+    buzzerPWMPulseCount++;
+    if (buzzerPWMPulseCount >= 300) {
+      HAL_TIM_PWM_Stop_IT(&HW_BUZZER_TIM, HW_BUZZER_TIM_CHANNEL);
+      buzzerPWMPulseCount = 0;
+    }
   }
 }
