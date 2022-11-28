@@ -25,19 +25,18 @@ extern TIM_HandleTypeDef HW_ENCODER_TIM;
 #define HW_BUZZER_TIM_ACTIVE_CHANNEL HAL_TIM_ACTIVE_CHANNEL_2
 extern TIM_HandleTypeDef HW_BUZZER_TIM;
 
-#define HW_ENCODER_COUNT_TIM htim6
-#define HW_ENCODER_COUNT_TIM_INSTANCE TIM6
-extern TIM_HandleTypeDef HW_ENCODER_COUNT_TIM;
-
 void HW_Init();
 void HW_Tick();
+
 void HW_Buzz();
 void HW_RelayToggle();
-void HW_LCDBrightnessIncrease();
-void HW_LCDBrightnessDecrease();
+void HW_RelaySwitchON();
+void HW_RelaySwitchOFF();
+uint8_t HW_GetRelayState();
+void HW_LCDSetBrightness(uint8_t value);
+uint8_t HW_LCDGetBrightness();
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 
 #endif /* INC_HW_H_ */

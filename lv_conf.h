@@ -353,7 +353,7 @@
 #define LV_FONT_MONTSERRAT_8  0
 #define LV_FONT_MONTSERRAT_10 0
 #define LV_FONT_MONTSERRAT_12 0
-#define LV_FONT_MONTSERRAT_14 1
+#define LV_FONT_MONTSERRAT_14 0
 #define LV_FONT_MONTSERRAT_16 0
 #define LV_FONT_MONTSERRAT_18 0
 #define LV_FONT_MONTSERRAT_20 0
@@ -379,8 +379,8 @@
 #define LV_FONT_SIMSUN_16_CJK            0  /*1000 most common CJK radicals*/
 
 /*Pixel perfect monospace fonts*/
-#define LV_FONT_UNSCII_8  0
-#define LV_FONT_UNSCII_16 0
+#define LV_FONT_UNSCII_8  1
+#define LV_FONT_UNSCII_16 1
 
 /*Optionally declare custom fonts here.
  *You can use these fonts as default font too and they will be available globally.
@@ -388,7 +388,7 @@
 #define LV_FONT_CUSTOM_DECLARE
 
 /*Always set a default font*/
-#define LV_FONT_DEFAULT &lv_font_montserrat_14
+#define LV_FONT_DEFAULT &lv_font_unscii_8 // &lv_font_montserrat_14
 
 /*Enable handling large font and/or fonts with a lot of characters.
  *The limit depends on the font size, font face and bpp.
@@ -406,7 +406,7 @@
 #endif
 
 /*Enable drawing placeholders when glyph dsc is not found*/
-#define LV_USE_FONT_PLACEHOLDER 1
+#define LV_USE_FONT_PLACEHOLDER 0
 
 /*=================
  *  TEXT SETTINGS
@@ -418,7 +418,7 @@
  * - LV_TXT_ENC_UTF8
  * - LV_TXT_ENC_ASCII
  */
-#define LV_TXT_ENC LV_TXT_ENC_UTF8
+#define LV_TXT_ENC LV_TXT_ENC_ASCII // LV_TXT_ENC_UTF8
 
 /*Can break (wrap) texts on these chars*/
 #define LV_TXT_BREAK_CHARS " ,.;:-_"
@@ -460,7 +460,7 @@
 
 /*Documentation of the widgets: https://docs.lvgl.io/latest/en/html/widgets/index.html*/
 
-#define LV_USE_ARC        1
+#define LV_USE_ARC        0
 
 #define LV_USE_BAR        1
 
@@ -478,20 +478,20 @@
 
 #define LV_USE_LABEL      1
 #if LV_USE_LABEL
-    #define LV_LABEL_TEXT_SELECTION 1 /*Enable selecting text of the label*/
-    #define LV_LABEL_LONG_TXT_HINT 1  /*Store some extra info in labels to speed up drawing of very long texts*/
+    #define LV_LABEL_TEXT_SELECTION 0 /*Enable selecting text of the label*/
+    #define LV_LABEL_LONG_TXT_HINT 0  /*Store some extra info in labels to speed up drawing of very long texts*/
 #endif
 
 #define LV_USE_LINE       1
 
-#define LV_USE_ROLLER     1   /*Requires: lv_label*/
+#define LV_USE_ROLLER     0   /*Requires: lv_label*/
 #if LV_USE_ROLLER
     #define LV_ROLLER_INF_PAGES 7 /*Number of extra "pages" when the roller is infinite*/
 #endif
 
 #define LV_USE_SLIDER     1   /*Requires: lv_bar*/
 
-#define LV_USE_SWITCH     0
+#define LV_USE_SWITCH     1
 
 #define LV_USE_TEXTAREA   0   /*Requires: lv_label*/
 #if LV_USE_TEXTAREA != 0
@@ -531,7 +531,7 @@
 
 #define LV_USE_KEYBOARD   0
 
-#define LV_USE_LED        0
+#define LV_USE_LED        1
 
 #define LV_USE_LIST       0
 
@@ -692,7 +692,7 @@
 #define LV_USE_IMGFONT 0
 
 /*1: Enable a published subscriber based messaging system */
-#define LV_USE_MSG 1
+#define LV_USE_MSG 0
 
 /*1: Enable Pinyin input method*/
 /*Requires: lv_keyboard*/

@@ -50,7 +50,6 @@ static void tft_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * 
 
   for (y = area->y1; y <= area->y2; y++) {
     for (x = area->x1; x <= area->x2; x++) {
-      // ST7735_DrawPixel(x, y, color_p->full);
       display_fb[i] = color_p->full;
       color_p++;
       i++;
