@@ -74,6 +74,8 @@ void Error_Handler(void);
 #define RELAY_GPIO_Port GPIOB
 #define ENC_A_Pin GPIO_PIN_6
 #define ENC_A_GPIO_Port GPIOC
+#define BUZZER_CTL_Pin GPIO_PIN_7
+#define BUZZER_CTL_GPIO_Port GPIOC
 #define ENC_B_Pin GPIO_PIN_5
 #define ENC_B_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
