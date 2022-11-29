@@ -277,11 +277,13 @@ static void UI_RenderHomeScreen() {
   label = lv_label_create(lv_scr_act());
   lv_obj_align(label, LV_ALIGN_CENTER, -40, -1);
   lv_label_set_text(label, "35");
+  lv_obj_set_style_text_color(label, lv_color_hex(UI_COLOR_RED), 0);
   lv_obj_set_style_text_font(label, &lv_font_montserrat_36_custom, 0);
 
   label = lv_label_create(lv_scr_act());
   lv_obj_align(label, LV_ALIGN_CENTER, 40, -1);
   lv_label_set_text(label, "66");
+  lv_obj_set_style_text_color(label, lv_color_hex(UI_COLOR_YELLOW), 0);
   lv_obj_set_style_text_font(label, &lv_font_montserrat_36_custom, 0);
 
   label = lv_label_create(lv_scr_act());
@@ -292,13 +294,15 @@ static void UI_RenderHomeScreen() {
   lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 5, -5);
   lv_label_set_text(label, "Relay:");
 
-  lv_obj_t * relayLed  = lv_led_create(lv_scr_act());
-  lv_obj_set_size(relayLed, 10, 10);
-  lv_obj_align(relayLed, LV_ALIGN_BOTTOM_LEFT, 57, -7);
+  lv_obj_t * relay_status_indicator = lv_obj_create(lv_scr_act());
+  lv_obj_set_style_radius(relay_status_indicator, LV_RADIUS_CIRCLE, 0);
+  lv_obj_set_size(relay_status_indicator, 13, 13);
+  lv_obj_align(relay_status_indicator, LV_ALIGN_BOTTOM_LEFT, 55, -5);
+
   if (HW_GetRelayState()) {
-    lv_led_on(relayLed);
+    lv_obj_set_style_bg_color(relay_status_indicator, lv_color_hex(UI_COLOR_BLUE), 0);
   } else {
-    lv_led_off(relayLed);
+    lv_obj_set_style_bg_color(relay_status_indicator, lv_color_hex(UI_COLOR_GRAY), 0);
   }
 }
 
