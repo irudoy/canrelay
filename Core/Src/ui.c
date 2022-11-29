@@ -41,6 +41,7 @@ static lv_indev_t * indev_encoder;
 
 static void showMenuHandler(lv_event_t * e) {
   LV_UNUSED(e);
+  lv_indev_wait_release(indev_encoder);
   UI_RenderMenu();
 }
 
@@ -105,15 +106,22 @@ static void UI_RenderDemoScreen() {
   lv_anim_start(&a);
 }
 
-static lv_obj_t * createMenuItem(lv_obj_t * parent, const char * text) {
+static lv_obj_t * createMenuItem(lv_obj_t * parent, const char * text, const char * icon) {
   lv_obj_t * obj = lv_menu_cont_create(parent);
-  lv_obj_t * label = lv_label_create(obj);
 
-  // lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
-  // lv_obj_set_flex_grow(label, 1);
+  lv_obj_t * label = NULL;
+  lv_obj_t * img = NULL;
+
+  if (icon) {
+    img = lv_img_create(obj);
+    lv_img_set_src(img, icon);
+  }
+
+  label = lv_label_create(obj);
   lv_label_set_text(label, text);
+  lv_obj_set_flex_grow(label, 1);
+  // lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
 
-  // lv_obj_set_height(obj, 20);
   lv_group_add_obj(lv_group_get_default(), obj);
 
   return obj;
@@ -216,9 +224,9 @@ static void UI_RenderMenu() {
 
   // ROOT->SETTINGS
   lv_obj_t * page_settings = lv_menu_page_create(menu, "Settings");
-  cont = createMenuItem(page_settings, "Brightness");
+  cont = createMenuItem(page_settings, "Brightness", LV_CUSTOM_SYMBOL_BRIGHTNESS);
   lv_menu_set_load_page_event(menu, cont, page_settings_brightness);
-  cont = createMenuItem(page_settings, "Sound");
+  cont = createMenuItem(page_settings, "Sound", LV_SYMBOL_AUDIO);
   lv_menu_set_load_page_event(menu, cont, page_settings_sound);
 
   // ROOT->DEBUG
@@ -239,11 +247,11 @@ static void UI_RenderMenu() {
 
   // ROOT
   lv_obj_t * page_root = lv_menu_page_create(menu, NULL);
-  cont = createMenuItem(page_root, "Relay");
+  cont = createMenuItem(page_root, "Relay", LV_CUSTOM_SYMBOL_PLUG);
   lv_menu_set_load_page_event(menu, cont, page_relay);
-  cont = createMenuItem(page_root, "Settings");
+  cont = createMenuItem(page_root, "Settings", LV_SYMBOL_SETTINGS);
   lv_menu_set_load_page_event(menu, cont, page_settings);
-  cont = createMenuItem(page_root, "Debug");
+  cont = createMenuItem(page_root, "Debug", LV_CUSTOM_SYMBOL_BUG);
   lv_menu_set_load_page_event(menu, cont, page_debug);
 
   lv_menu_set_page(menu, page_root);
@@ -253,21 +261,45 @@ static void UI_RenderHomeScreen() {
   lv_obj_clean(lv_scr_act());
 
   lv_obj_t * dummy = lv_btn_create(lv_scr_act());
-  lv_obj_add_event_cb(dummy, showMenuHandler, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(dummy, showMenuHandler, LV_EVENT_LONG_PRESSED, NULL);
   lv_obj_add_flag(dummy, LV_OBJ_FLAG_HIDDEN);
 
+  lv_obj_t * label;
+
+  label = lv_label_create(lv_scr_act());
+  lv_obj_align(label, LV_ALIGN_TOP_MID, -40, 5);
+  lv_label_set_text(label, "Current:");
+
+  label = lv_label_create(lv_scr_act());
+  lv_obj_align(label, LV_ALIGN_TOP_MID, 40, 5);
+  lv_label_set_text(label, "Target:");
+
+  label = lv_label_create(lv_scr_act());
+  lv_obj_align(label, LV_ALIGN_CENTER, -40, -1);
+  lv_label_set_text(label, "35");
+  lv_obj_set_style_text_font(label, &lv_font_montserrat_36_custom, 0);
+
+  label = lv_label_create(lv_scr_act());
+  lv_obj_align(label, LV_ALIGN_CENTER, 40, -1);
+  lv_label_set_text(label, "66");
+  lv_obj_set_style_text_font(label, &lv_font_montserrat_36_custom, 0);
+
+  label = lv_label_create(lv_scr_act());
+  lv_obj_align(label, LV_ALIGN_BOTTOM_RIGHT, -5, -5);
+  lv_label_set_text(label, "[°C]");
+
+  label = lv_label_create(lv_scr_act());
+  lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 5, -5);
+  lv_label_set_text(label, "Relay:");
+
   lv_obj_t * relayLed  = lv_led_create(lv_scr_act());
-  lv_obj_align(relayLed, LV_ALIGN_CENTER, 50, 0);
+  lv_obj_set_size(relayLed, 10, 10);
+  lv_obj_align(relayLed, LV_ALIGN_BOTTOM_LEFT, 57, -7);
   if (HW_GetRelayState()) {
     lv_led_on(relayLed);
   } else {
     lv_led_off(relayLed);
   }
-
-  lv_obj_t * current_value_label = lv_label_create(lv_scr_act());
-  lv_label_set_text(current_value_label, "66");
-  lv_obj_align(current_value_label, LV_ALIGN_CENTER, -20, 0);
-  lv_obj_set_style_text_font(current_value_label, &lv_font_montserrat_48_custom, 0);
 }
 
 void UI_Init() {
