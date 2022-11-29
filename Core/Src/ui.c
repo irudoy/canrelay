@@ -179,6 +179,8 @@ static void UI_RenderMenu() {
   lv_obj_set_size(menu, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
   lv_obj_center(menu);
 
+  lv_menu_set_mode_header(menu, LV_MENU_HEADER_TOP_UNFIXED);
+
   lv_menu_set_mode_root_back_btn(menu, LV_MENU_ROOT_BACK_BTN_ENABLED);
   lv_obj_t * back_btn = lv_menu_get_main_header_back_btn(menu);
   lv_obj_t * back_btn_label = lv_label_create(back_btn);
