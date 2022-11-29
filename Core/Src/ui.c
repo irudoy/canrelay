@@ -247,7 +247,6 @@ static void UI_RenderMenu() {
   lv_menu_set_load_page_event(menu, cont, page_debug);
 
   lv_menu_set_page(menu, page_root);
-  lv_group_focus_next(lv_group_get_default());
 }
 
 static void UI_RenderHomeScreen() {
@@ -268,7 +267,7 @@ static void UI_RenderHomeScreen() {
   lv_obj_t * current_value_label = lv_label_create(lv_scr_act());
   lv_label_set_text(current_value_label, "66");
   lv_obj_align(current_value_label, LV_ALIGN_CENTER, -20, 0);
-  lv_obj_set_style_text_font(current_value_label, &lv_font_unscii_16, 0);
+  lv_obj_set_style_text_font(current_value_label, &lv_font_montserrat_48_custom, 0);
 }
 
 void UI_Init() {
