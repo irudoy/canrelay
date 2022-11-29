@@ -297,7 +297,7 @@ static void UI_RenderHomeScreen() {
   lv_obj_t * relay_status_indicator = lv_obj_create(lv_scr_act());
   lv_obj_set_style_radius(relay_status_indicator, LV_RADIUS_CIRCLE, 0);
   lv_obj_set_size(relay_status_indicator, 13, 13);
-  lv_obj_align(relay_status_indicator, LV_ALIGN_BOTTOM_LEFT, 55, -5);
+  lv_obj_align(relay_status_indicator, LV_ALIGN_BOTTOM_LEFT, 55, -6);
 
   if (HW_GetRelayState()) {
     lv_obj_set_style_bg_color(relay_status_indicator, lv_color_hex(UI_COLOR_BLUE), 0);
