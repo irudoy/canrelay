@@ -6,6 +6,7 @@
 extern int16_t HW_encoderDiff;
 extern lv_indev_state_t HW_encoderBtnState;
 extern uint8_t HW_buzzerEnabled;
+extern int16_t HW_targetValue;
 
 static void UI_RenderHomeScreen();
 static void UI_RenderMenu();
@@ -166,6 +167,11 @@ static void menuBackBtnHandler(lv_event_t * e) {
   }
 }
 
+static void targetValueSpinboxChangeHandler(lv_event_t * e) {
+  lv_obj_t * spinbox = lv_event_get_target(e);
+  HW_targetValue = lv_spinbox_get_value(spinbox);
+}
+
 static void UI_RenderMenu() {
   lv_obj_clean(lv_scr_act());
 
@@ -182,6 +188,32 @@ static void UI_RenderMenu() {
   lv_obj_t * cont;
   lv_obj_t * section;
   lv_obj_t * label;
+
+  // ROOT->SETTINGS->CONTROLLER->DATA_SOURCE
+  lv_obj_t * page_settings_controller_datasource = lv_menu_page_create(menu, "Data Source");
+  section = lv_menu_section_create(page_settings_controller_datasource);
+  cont = lv_menu_cont_create(section);
+  label = lv_label_create(cont);
+  lv_label_set_text(label, "TODO");
+
+  // ROOT->SETTINGS->CONTROLLER->TARGET_VALUE
+  lv_obj_t * page_settings_controller_targetvalue = lv_menu_page_create(menu, "Target value");
+  section = lv_menu_section_create(page_settings_controller_targetvalue);
+  cont = lv_menu_cont_create(section);
+  lv_obj_t * target_value_spinbox = lv_spinbox_create(cont);
+  lv_spinbox_set_range(target_value_spinbox, -50, 999);
+  lv_spinbox_set_digit_format(target_value_spinbox, 3, 0);
+  lv_spinbox_set_value(target_value_spinbox, HW_targetValue);
+  lv_obj_set_width(target_value_spinbox, 100);
+  lv_obj_center(target_value_spinbox);
+  lv_obj_add_event_cb(target_value_spinbox, targetValueSpinboxChangeHandler, LV_EVENT_VALUE_CHANGED, NULL);
+
+  // ROOT->SETTINGS->CONTROLLER
+  lv_obj_t * page_settings_controller = lv_menu_page_create(menu, "Controller");
+  cont = createMenuItem(page_settings_controller, "Target value", LV_SYMBOL_SETTINGS);
+  lv_menu_set_load_page_event(menu, cont, page_settings_controller_targetvalue);
+  cont = createMenuItem(page_settings_controller, "Data Source", LV_CUSTOM_SYMBOL_NETWORK_WIRED);
+  lv_menu_set_load_page_event(menu, cont, page_settings_controller_datasource);
 
   // ROOT->SETTINGS->BRIGHTNESS
   lv_obj_t * page_settings_brightness = lv_menu_page_create(menu, "Brightness");
@@ -224,6 +256,8 @@ static void UI_RenderMenu() {
 
   // ROOT->SETTINGS
   lv_obj_t * page_settings = lv_menu_page_create(menu, "Settings");
+  cont = createMenuItem(page_settings, "Controller", LV_CUSTOM_SYMBOL_SLIDERS);
+  lv_menu_set_load_page_event(menu, cont, page_settings_controller);
   cont = createMenuItem(page_settings, "Brightness", LV_CUSTOM_SYMBOL_BRIGHTNESS);
   lv_menu_set_load_page_event(menu, cont, page_settings_brightness);
   cont = createMenuItem(page_settings, "Sound", LV_SYMBOL_AUDIO);
@@ -282,7 +316,9 @@ static void UI_RenderHomeScreen() {
 
   label = lv_label_create(lv_scr_act());
   lv_obj_align(label, LV_ALIGN_CENTER, 40, -1);
-  lv_label_set_text(label, "66");
+  char buf[4];
+  lv_snprintf(buf, sizeof(buf), "%d", HW_targetValue);
+  lv_label_set_text(label, buf);
   lv_obj_set_style_text_color(label, lv_color_hex(UI_COLOR_YELLOW), 0);
   lv_obj_set_style_text_font(label, &lv_font_montserrat_36_custom, 0);
 

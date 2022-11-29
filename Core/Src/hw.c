@@ -9,6 +9,7 @@ static int32_t buzzerPWMPulseCount = 0;
 volatile lv_indev_state_t HW_encoderBtnState = LV_INDEV_STATE_RELEASED;
 volatile int16_t HW_encoderDiff = 0;
 uint8_t HW_buzzerEnabled = 1;
+int16_t HW_targetValue = 47;
 
 void HW_Init() {
   HAL_TIM_PWM_Start(&HW_LCD_LED_PWM_TIM, HW_LCD_LED_PWM_TIM_CHANNEL);

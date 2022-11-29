@@ -23,18 +23,24 @@ chars_14 = [
   char_to_hex(":"),
   char_to_hex("["),
   char_to_hex("]"),
+  char_to_hex("+"),
+  char_to_hex("-"),
+  char_to_hex("."),
   "0xB0", # °
 ]
 
 chars_36 = [
   range_09,
   char_to_hex(" "),
+  char_to_hex("-"),
 ]
 
 icons_14 = [
   "61926", # LV_CUSTOM_SYMBOL_PLUG
   "61832", # LV_CUSTOM_SYMBOL_BUG
   "61829", # LV_CUSTOM_SYMBOL_BRIGHTNESS
+  "61918", # LV_CUSTOM_SYMBOL_SLIDERS
+  "63231", # LV_CUSTOM_SYMBOL_NETWORK_WIRED
 
   "61523", # LV_SYMBOL_LEFT
   "61459", # LV_SYMBOL_SETTINGS
