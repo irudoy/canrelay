@@ -78,6 +78,7 @@ void Error_Handler(void);
 #define BUZZER_CTL_GPIO_Port GPIOC
 #define ENC_B_Pin GPIO_PIN_5
 #define ENC_B_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
