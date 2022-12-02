@@ -1,5 +1,6 @@
 #include "hw.h"
 #include "msg.h"
+#include "ee24.h"
 #include "stm32f2xx_hal.h"
 #include "../../lvgl/lvgl.h"
 
@@ -10,6 +11,8 @@ volatile lv_indev_state_t HW_encoderBtnState = LV_INDEV_STATE_RELEASED;
 volatile int16_t HW_encoderDiff = 0;
 uint8_t HW_buzzerEnabled = 1;
 int16_t HW_targetValue = 47;
+
+uint8_t data[16];
 
 void HW_Init() {
   HAL_TIM_PWM_Start(&HW_LCD_LED_PWM_TIM, HW_LCD_LED_PWM_TIM_CHANNEL);
@@ -22,6 +25,15 @@ void HW_Init() {
   // HW_RelayToggle();
   // HAL_Delay(500);
   // HW_RelayToggle();
+
+  // uint8_t dataO[1] = { 0x54 };
+  // ee24_write(0, dataO, 1, 1000);
+
+  if (ee24_isConnected()) {
+    ee24_read(0, data, 16, 1000);
+  }
+
+  HAL_Delay(1);
 }
 
 void HW_Tick() {

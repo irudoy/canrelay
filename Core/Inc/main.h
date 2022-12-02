@@ -72,6 +72,10 @@ void Error_Handler(void);
 #define ENC_BTN_EXTI_IRQn EXTI1_IRQn
 #define RELAY_Pin GPIO_PIN_0
 #define RELAY_GPIO_Port GPIOB
+#define EEPROM_SCL_Pin GPIO_PIN_10
+#define EEPROM_SCL_GPIO_Port GPIOB
+#define EEPROM_SDA_Pin GPIO_PIN_11
+#define EEPROM_SDA_GPIO_Port GPIOB
 #define ENC_A_Pin GPIO_PIN_6
 #define ENC_A_GPIO_Port GPIOC
 #define BUZZER_CTL_Pin GPIO_PIN_7
