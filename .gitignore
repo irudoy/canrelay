@@ -15,3 +15,7 @@ Thumbs.db
 
 scripts/fonts/out/**/*
 !scripts/fonts/out/.gitkeep
+
+.idea
+cmake-build-*/
+CMakeLists.txt
