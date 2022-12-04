@@ -1,6 +1,5 @@
 #include "hw.h"
-#include "msg.h"
-#include "ee24.h"
+#include "settings.h"
 #include "stm32f2xx_hal.h"
 #include "../../lvgl/lvgl.h"
 
@@ -9,31 +8,21 @@ static int32_t buzzerPWMPulseCount = 0;
 
 volatile lv_indev_state_t HW_encoderBtnState = LV_INDEV_STATE_RELEASED;
 volatile int16_t HW_encoderDiff = 0;
-uint8_t HW_buzzerEnabled = 1;
-int16_t HW_targetValue = 47;
 
-uint8_t data[16];
+extern canrelay_settings_t CRS_Settings;
 
 void HW_Init() {
   HAL_TIM_PWM_Start(&HW_LCD_LED_PWM_TIM, HW_LCD_LED_PWM_TIM_CHANNEL);
   HAL_TIM_Encoder_Start(&HW_ENCODER_TIM, HW_ENCODER_TIM_CHANNEL);
 
-  HW_LCDSetBrightness(90);
+  CRS_readSettings();
+  HW_LCDSetBrightness(CRS_Settings.brightness);
 
   HW_RelayToggle();
   // HAL_Delay(500);
   // HW_RelayToggle();
   // HAL_Delay(500);
   // HW_RelayToggle();
-
-  // uint8_t dataO[1] = { 0x54 };
-  // ee24_write(0, dataO, 1, 1000);
-
-  if (ee24_isConnected()) {
-    ee24_read(0, data, 16, 1000);
-  }
-
-  HAL_Delay(1);
 }
 
 void HW_Tick() {
@@ -53,7 +42,9 @@ void HW_Tick() {
 }
 
 void HW_Buzz() {
-  HAL_TIM_PWM_Start_IT(&HW_BUZZER_TIM, HW_BUZZER_TIM_CHANNEL);
+  if (CRS_Settings.buzzerEnabled) {
+    HAL_TIM_PWM_Start_IT(&HW_BUZZER_TIM, HW_BUZZER_TIM_CHANNEL);
+  }
 }
 
 void HW_RelayToggle() {
@@ -79,15 +70,7 @@ uint8_t HW_GetRelayState() {
  */
 void HW_LCDSetBrightness(uint8_t value) {
   HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 = (100 - value) * (61166 / 100);
-}
-
-/**
- * @brief Get LCD Brightness
- *
- * @returns value 0-100%
- */
-uint8_t HW_LCDGetBrightness() {
-  return 100 - (HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 / (61166 / 100));
+  CRS_Settings.brightness = value;
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {

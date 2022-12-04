@@ -1,12 +1,16 @@
 #include "ui.h"
+#include "settings.h"
 #include "hw.h"
 #include "msg.h"
 #include "../../lvgl/lvgl.h"
 
 extern int16_t HW_encoderDiff;
 extern lv_indev_state_t HW_encoderBtnState;
-extern uint8_t HW_buzzerEnabled;
-extern int16_t HW_targetValue;
+extern canrelay_settings_t CRS_Settings;
+
+static lv_obj_t * page_settings;
+static lv_indev_drv_t indev_drv;
+static lv_indev_t * indev_encoder;
 
 static void UI_RenderHomeScreen();
 static void UI_RenderMenu();
@@ -20,25 +24,12 @@ static void encoderReadCallback(lv_indev_drv_t * drv, lv_indev_data_t * data) {
 }
 
 static void encoderFeedbackCallback(lv_indev_drv_t * drv, lv_event_code_t event_code) {
-  if (HW_buzzerEnabled && (event_code == LV_EVENT_LONG_PRESSED
+  if (event_code == LV_EVENT_LONG_PRESSED
     || event_code == LV_EVENT_SHORT_CLICKED
-    || event_code == LV_EVENT_FOCUSED)) {
+    || event_code == LV_EVENT_FOCUSED) {
     HW_Buzz();
   }
 }
-
-static lv_indev_drv_t indev_drv;
-static lv_indev_t * indev_encoder;
-
-// static void update_label_value_event_cb(lv_event_t * e) {
-//     lv_obj_t * label = lv_event_get_target(e);
-//     lv_msg_t * m = lv_event_get_msg(e);
-
-//     const char * fmt = lv_msg_get_user_data(m);
-//     const int32_t * v = lv_msg_get_payload(m);
-
-//     lv_label_set_text_fmt(label, fmt, *v);
-// }
 
 static void showMenuHandler(lv_event_t * e) {
   LV_UNUSED(e);
@@ -57,15 +48,11 @@ static void UI_RenderDebugScreen() {
   lv_label_set_text(label1, "LCD_BR_DC: ?");
   lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_align(label1, LV_ALIGN_CENTER, 0, -15);
-  // lv_obj_add_event_cb(label1, update_label_value_event_cb, LV_EVENT_MSG_RECEIVED, NULL);
-  // lv_msg_subsribe_obj(MSG_DEBUG_LCD_BR_PWM, label1, "LCD_BR_DC: %d");
 
   lv_obj_t * label2 = lv_label_create(lv_scr_act());
   lv_label_set_text(label2, "ENC_VAL: ?");
   lv_obj_set_style_text_align(label2, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_align(label2, LV_ALIGN_CENTER, 0, 15);
-  // lv_obj_add_event_cb(label2, update_label_value_event_cb, LV_EVENT_MSG_RECEIVED, NULL);
-  // lv_msg_subsribe_obj(MSG_DEBUG_ENC_VAL, label2, "ENC_VAL: %d");
 }
 
 static void anim_x_cb(void * var, int32_t v) {
@@ -135,7 +122,7 @@ static void relaySwitchHandler(lv_event_t * e) {
 
 static void buzzerSwitchHandler(lv_event_t * e) {
   LV_UNUSED(e);
-  HW_buzzerEnabled = !HW_buzzerEnabled;
+  CRS_Settings.buzzerEnabled = !CRS_Settings.buzzerEnabled;
 }
 
 static void brightnessSliderHandler(lv_event_t * e) {
@@ -161,6 +148,11 @@ static void demoBtnClickHandler(lv_event_t * e) {
 static void menuBackBtnHandler(lv_event_t * e) {
   lv_obj_t * obj = lv_event_get_target(e);
   lv_obj_t * menu = lv_event_get_user_data(e);
+  lv_obj_t * currPage = lv_menu_get_cur_main_page(menu);
+
+  if (currPage == page_settings) {
+    CRS_persistSettings();
+  }
 
   if (lv_menu_back_btn_is_root(menu, obj)) {
     UI_RenderHomeScreen();
@@ -169,7 +161,7 @@ static void menuBackBtnHandler(lv_event_t * e) {
 
 static void targetValueSpinboxChangeHandler(lv_event_t * e) {
   lv_obj_t * spinbox = lv_event_get_target(e);
-  HW_targetValue = lv_spinbox_get_value(spinbox);
+  CRS_Settings.targetValue = (int16_t) lv_spinbox_get_value(spinbox);
 }
 
 static void UI_RenderMenu() {
@@ -203,9 +195,9 @@ static void UI_RenderMenu() {
   section = lv_menu_section_create(page_settings_controller_targetvalue);
   cont = lv_menu_cont_create(section);
   lv_obj_t * target_value_spinbox = lv_spinbox_create(cont);
-  lv_spinbox_set_range(target_value_spinbox, -50, 999);
+  lv_spinbox_set_range(target_value_spinbox, CR_SETTINGS_TARGET_VALUE_MIN, CR_SETTINGS_TARGET_VALUE_MAX);
   lv_spinbox_set_digit_format(target_value_spinbox, 3, 0);
-  lv_spinbox_set_value(target_value_spinbox, HW_targetValue);
+  lv_spinbox_set_value(target_value_spinbox, CRS_Settings.targetValue);
   lv_obj_set_width(target_value_spinbox, 100);
   lv_obj_center(target_value_spinbox);
   lv_obj_add_event_cb(target_value_spinbox, targetValueSpinboxChangeHandler, LV_EVENT_VALUE_CHANGED, NULL);
@@ -225,7 +217,7 @@ static void UI_RenderMenu() {
   lv_obj_t * brightness_slider = lv_slider_create(cont);
   lv_obj_set_width(brightness_slider, 80);
   lv_slider_set_range(brightness_slider, 0, 100);
-  lv_slider_set_value(brightness_slider, HW_LCDGetBrightness(), LV_ANIM_OFF);
+  lv_slider_set_value(brightness_slider, CRS_Settings.brightness, LV_ANIM_OFF);
   lv_obj_add_flag(brightness_slider, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
   lv_obj_add_event_cb(brightness_slider, brightnessSliderHandler, LV_EVENT_VALUE_CHANGED, NULL);
   label = lv_label_create(cont);
@@ -241,7 +233,7 @@ static void UI_RenderMenu() {
   lv_label_set_text(label, "Buzzer");
   lv_obj_set_flex_grow(label, 1);
   lv_obj_t * buzzer_sw = lv_switch_create(cont);
-  lv_obj_add_state(buzzer_sw, HW_buzzerEnabled ? LV_STATE_CHECKED : 0);
+  lv_obj_add_state(buzzer_sw, CRS_Settings.buzzerEnabled ? LV_STATE_CHECKED : 0);
   lv_obj_add_event_cb(buzzer_sw, buzzerSwitchHandler, LV_EVENT_VALUE_CHANGED, NULL);
 
   // ROOT->RELAY
@@ -257,7 +249,7 @@ static void UI_RenderMenu() {
   lv_obj_add_event_cb(relay_sw, relaySwitchHandler, LV_EVENT_VALUE_CHANGED, NULL);
 
   // ROOT->SETTINGS
-  lv_obj_t * page_settings = lv_menu_page_create(menu, "Settings");
+  page_settings = lv_menu_page_create(menu, "Settings");
   cont = createMenuItem(page_settings, "Controller", LV_CUSTOM_SYMBOL_SLIDERS);
   lv_menu_set_load_page_event(menu, cont, page_settings_controller);
   cont = createMenuItem(page_settings, "Brightness", LV_CUSTOM_SYMBOL_BRIGHTNESS);
@@ -319,7 +311,7 @@ static void UI_RenderHomeScreen() {
   label = lv_label_create(lv_scr_act());
   lv_obj_align(label, LV_ALIGN_CENTER, 40, -1);
   char buf[4];
-  lv_snprintf(buf, sizeof(buf), "%d", HW_targetValue);
+  lv_snprintf(buf, sizeof(buf), "%d", CRS_Settings.targetValue);
   lv_label_set_text(label, buf);
   lv_obj_set_style_text_color(label, lv_color_hex(UI_COLOR_YELLOW), 0);
   lv_obj_set_style_text_font(label, &lv_font_montserrat_36_custom, 0);

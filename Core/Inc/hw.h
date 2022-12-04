@@ -34,9 +34,5 @@ void HW_RelaySwitchON();
 void HW_RelaySwitchOFF();
 uint8_t HW_GetRelayState();
 void HW_LCDSetBrightness(uint8_t value);
-uint8_t HW_LCDGetBrightness();
-
-void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim);
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 
 #endif /* INC_HW_H_ */

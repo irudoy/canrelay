@@ -110,6 +110,39 @@ bool ee24_read(uint16_t address, uint8_t *data, size_t len, uint32_t timeout) {
   }
 }
 
+void ee24_write_obj(uint16_t addr, void * obj, size_t lenInBytes, uint32_t timeout) {
+  uint8_t i;
+  uint8_t * ptr = (uint8_t *) obj;
+
+  for (i = 0; i < lenInBytes; i++) {
+    ee24_write(addr++, ptr++, 1, timeout);
+  }
+}
+
+void ee24_update_obj(uint16_t addr, void * obj, size_t lenInBytes, uint32_t timeout) {
+  uint8_t curr;
+  uint8_t i;
+  uint8_t * ptr = (uint8_t *) obj;
+
+  for (i = 0; i < lenInBytes; i++) {
+    ee24_read(addr, &curr, 1, timeout);
+    if (curr != (* ptr)) {
+      ee24_write(addr, ptr, 1, timeout);
+    }
+    addr++;
+    ptr++;
+  }
+}
+
+void ee24_read_obj(uint16_t addr, void * obj, size_t lenInBytes, uint32_t timeout) {
+  uint8_t i;
+  uint8_t * ptr = (uint8_t *) obj;
+
+  for (i = 0; i < lenInBytes; i++) {
+    ee24_read(addr++, ptr++, 1, timeout);
+  }
+}
+
 bool ee24_eraseChip(void) {
   const uint8_t eraseData[32] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF\
     , 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
