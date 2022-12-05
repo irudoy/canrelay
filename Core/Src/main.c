@@ -110,6 +110,7 @@ int main(void)
   HW_Init();
   LCD_Init();
   UI_Init();
+  HW_LCDBacklightEnable();
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -34,5 +34,6 @@ void HW_RelaySwitchON();
 void HW_RelaySwitchOFF();
 uint8_t HW_GetRelayState();
 void HW_LCDSetBrightness(uint8_t value);
+void HW_LCDBacklightEnable();
 
 #endif /* INC_HW_H_ */

@@ -18,6 +18,7 @@ void LCD_Init() {
   lv_disp_drv_init(&disp_drv);
 
   ST7735_Init();
+  ST7735_FillScreen(ST7735_BLACK);
 
   disp_drv.draw_buf = &buf;
   disp_drv.flush_cb = tft_flush;

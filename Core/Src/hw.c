@@ -11,18 +11,26 @@ volatile int16_t HW_encoderDiff = 0;
 
 extern canrelay_settings_t CRS_Settings;
 
+static uint16_t lcdBacklightTick = 0;
+
+static uint16_t brightnessPercentToPWMDuty(uint8_t value) {
+  return (100 - value) * (61166 / 100);
+}
+
 void HW_Init() {
-  HAL_TIM_PWM_Start(&HW_LCD_LED_PWM_TIM, HW_LCD_LED_PWM_TIM_CHANNEL);
   HAL_TIM_Encoder_Start(&HW_ENCODER_TIM, HW_ENCODER_TIM_CHANNEL);
-
   CRS_readSettings();
-  HW_LCDSetBrightness(CRS_Settings.brightness);
-
   HW_RelayToggle();
   // HAL_Delay(500);
   // HW_RelayToggle();
   // HAL_Delay(500);
   // HW_RelayToggle();
+}
+
+void HW_LCDBacklightEnable() {
+  lcdBacklightTick = 1;
+  HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 = 65532;
+  HAL_TIM_PWM_Start(&HW_LCD_LED_PWM_TIM, HW_LCD_LED_PWM_TIM_CHANNEL);
 }
 
 void HW_Tick() {
@@ -38,6 +46,18 @@ void HW_Tick() {
     }
     encoderPrevCount = HW_ENCODER_TIM_INSTANCE->CNT;
     // lv_msg_send(MSG_DEBUG_ENC_VAL, &encoderPrevCount);
+  }
+
+  if (lcdBacklightTick != 0) {
+    if (lcdBacklightTick > 1) {
+      HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 -= 1;
+      if (HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 <= brightnessPercentToPWMDuty(CRS_Settings.brightness)) {
+        HW_LCDSetBrightness(CRS_Settings.brightness);
+        lcdBacklightTick = 0;
+      }
+    } else {
+      lcdBacklightTick++;
+    }
   }
 }
 
@@ -69,7 +89,7 @@ uint8_t HW_GetRelayState() {
  * @param value 0-100%
  */
 void HW_LCDSetBrightness(uint8_t value) {
-  HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 = (100 - value) * (61166 / 100);
+  HW_LCD_LED_PWM_TIM_INSTANCE->CCR1 = brightnessPercentToPWMDuty(value);
   CRS_Settings.brightness = value;
 }
 

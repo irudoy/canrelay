@@ -183,3 +183,18 @@ void ST7735_SetGamma(GammaDef gamma) {
   ST7735_WriteData((uint8_t *) gamma, sizeof(gamma));
   ST7735_Unselect();
 }
+
+void ST7735_FillScreen(uint16_t color) {
+  ST7735_Select();
+  ST7735_SetAddressWindow(0, 0,ST7735_WIDTH - 1,ST7735_HEIGHT - 1);
+
+  uint8_t data[] = { color >> 8, color & 0xFF };
+  HAL_GPIO_WritePin(ST7735_DC_GPIO_Port, ST7735_DC_Pin, GPIO_PIN_SET);
+  for (uint8_t y = ST7735_HEIGHT; y > 0; y--) {
+    for (uint8_t x = ST7735_WIDTH; x > 0; x--) {
+      HAL_SPI_Transmit(&ST7735_SPI_PORT,data,sizeof(data),HAL_MAX_DELAY);
+    }
+  }
+
+  ST7735_Unselect();
+}
