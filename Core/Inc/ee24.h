@@ -1,5 +1,5 @@
-#ifndef	_EE24_H
-#define	_EE24_H
+#ifndef	INC_EE24_H_
+#define	INC_EE24_H_
 
 #ifdef __cplusplus
 extern "C" {

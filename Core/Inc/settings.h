@@ -1,5 +1,5 @@
-#ifndef CANRELAY_SETTINGS_H
-#define CANRELAY_SETTINGS_H
+#ifndef CANRELAY_SETTINGS_H_
+#define CANRELAY_SETTINGS_H_
 
 #include <stdint.h>
 
@@ -19,4 +19,4 @@ typedef struct {
 void CRS_readSettings(void);
 void CRS_persistSettings(void);
 
-#endif //CANRELAY_SETTINGS_H
+#endif //CANRELAY_SETTINGS_H_

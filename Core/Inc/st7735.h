@@ -1,5 +1,5 @@
-#ifndef __ST7735_H__
-#define __ST7735_H__
+#ifndef INC_ST7735_H_
+#define INC_ST7735_H_
 
 #include "main.h"
 
@@ -114,4 +114,4 @@ void ST7735_Init(void);
 void ST7735_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t* data);
 void ST7735_SetGamma(GammaDef gamma);
 
-#endif // __ST7735_H__
+#endif // INC_ST7735_H_

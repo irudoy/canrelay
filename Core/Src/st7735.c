@@ -177,10 +177,9 @@ void ST7735_DrawImage(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16
   ST7735_Unselect();
 }
 
-void ST7735_SetGamma(uint8_t gamma)
-{
+void ST7735_SetGamma(GammaDef gamma) {
   ST7735_Select();
   ST7735_WriteCommand(ST7735_GAMSET);
-  ST7735_WriteData(&gamma, sizeof(gamma));
+  ST7735_WriteData((uint8_t *) gamma, sizeof(gamma));
   ST7735_Unselect();
 }

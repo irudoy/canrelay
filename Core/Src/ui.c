@@ -1,7 +1,6 @@
 #include "ui.h"
 #include "settings.h"
 #include "hw.h"
-#include "msg.h"
 #include "../../lvgl/lvgl.h"
 
 extern int16_t HW_encoderDiff;
@@ -18,15 +17,16 @@ static void UI_RenderDebugScreen();
 static void UI_RenderDemoScreen();
 
 static void encoderReadCallback(lv_indev_drv_t * drv, lv_indev_data_t * data) {
+  LV_UNUSED(drv);
   data->enc_diff = HW_encoderDiff;
   data->state = HW_encoderBtnState;
   HW_encoderDiff = 0;
 }
 
-static void encoderFeedbackCallback(lv_indev_drv_t * drv, lv_event_code_t event_code) {
-  if (event_code == LV_EVENT_LONG_PRESSED
-    || event_code == LV_EVENT_SHORT_CLICKED
-    || event_code == LV_EVENT_FOCUSED) {
+static void encoderFeedbackCallback(lv_indev_drv_t * drv, uint8_t event_code) {
+  LV_UNUSED(drv);
+  lv_event_code_t e = (lv_event_code_t) event_code;
+  if (e == LV_EVENT_LONG_PRESSED || e == LV_EVENT_SHORT_CLICKED || e == LV_EVENT_FOCUSED) {
     HW_Buzz();
   }
 }
@@ -56,11 +56,11 @@ static void UI_RenderDebugScreen() {
 }
 
 static void anim_x_cb(void * var, int32_t v) {
-  lv_obj_set_x(var, v);
+  lv_obj_set_x(var, (int16_t) v);
 }
 
 static void anim_size_cb(void * var, int32_t v) {
-  lv_obj_set_size(var, v, v);
+  lv_obj_set_size(var, (int16_t) v, (int16_t) v);
 }
 
 static void UI_RenderDemoScreen() {
@@ -100,10 +100,8 @@ static lv_obj_t * createMenuItem(lv_obj_t * parent, const char * text, const cha
   lv_obj_t * label = NULL;
   lv_obj_t * img = NULL;
 
-  if (icon) {
-    img = lv_img_create(obj);
-    lv_img_set_src(img, icon);
-  }
+  img = lv_img_create(obj);
+  lv_img_set_src(img, icon);
 
   label = lv_label_create(obj);
   lv_label_set_text(label, text);
@@ -191,8 +189,8 @@ static void UI_RenderMenu() {
   lv_label_set_text(label, "TODO");
 
   // ROOT->SETTINGS->CONTROLLER->TARGET_VALUE
-  lv_obj_t * page_settings_controller_targetvalue = lv_menu_page_create(menu, "Target value");
-  section = lv_menu_section_create(page_settings_controller_targetvalue);
+  lv_obj_t * page_settings_controller_target_value = lv_menu_page_create(menu, "Target value");
+  section = lv_menu_section_create(page_settings_controller_target_value);
   cont = lv_menu_cont_create(section);
   lv_obj_t * target_value_spinbox = lv_spinbox_create(cont);
   lv_spinbox_set_range(target_value_spinbox, CR_SETTINGS_TARGET_VALUE_MIN, CR_SETTINGS_TARGET_VALUE_MAX);
@@ -205,7 +203,7 @@ static void UI_RenderMenu() {
   // ROOT->SETTINGS->CONTROLLER
   lv_obj_t * page_settings_controller = lv_menu_page_create(menu, "Controller");
   cont = createMenuItem(page_settings_controller, "Target value", LV_SYMBOL_SETTINGS);
-  lv_menu_set_load_page_event(menu, cont, page_settings_controller_targetvalue);
+  lv_menu_set_load_page_event(menu, cont, page_settings_controller_target_value);
   cont = createMenuItem(page_settings_controller, "Data Source", LV_CUSTOM_SYMBOL_NETWORK_WIRED);
   lv_menu_set_load_page_event(menu, cont, page_settings_controller_datasource);
 
