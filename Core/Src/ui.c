@@ -128,9 +128,7 @@ static void brightnessSliderHandler(lv_event_t * e) {
   HW_LCDSetBrightness((uint8_t)lv_slider_get_value(slider));
 
   lv_obj_t * label = lv_obj_get_child(lv_obj_get_parent(slider), 1);
-  char buf[8];
-  lv_snprintf(buf, sizeof(buf), "%d%%", (uint8_t)lv_slider_get_value(slider));
-  lv_label_set_text(label, buf);
+  lv_label_set_text_fmt(label, "%d%%", (uint8_t)lv_slider_get_value(slider));
 }
 
 static void debugBtnClickHandler(lv_event_t * e) {
@@ -219,9 +217,7 @@ static void UI_RenderMenu() {
   lv_obj_add_flag(brightness_slider, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
   lv_obj_add_event_cb(brightness_slider, brightnessSliderHandler, LV_EVENT_VALUE_CHANGED, NULL);
   label = lv_label_create(cont);
-  char buf[8];
-  lv_snprintf(buf, sizeof(buf), "%d%%", (uint8_t)lv_slider_get_value(brightness_slider));
-  lv_label_set_text(label, buf);
+  lv_label_set_text_fmt(label, "%d%%", (uint8_t)lv_slider_get_value(brightness_slider));
 
   // ROOT->SETTINGS->SOUND
   lv_obj_t * page_settings_sound = lv_menu_page_create(menu, "Sound");
@@ -302,15 +298,13 @@ static void UI_RenderHomeScreen() {
 
   label = lv_label_create(lv_scr_act());
   lv_obj_align(label, LV_ALIGN_CENTER, -40, -1);
-  lv_label_set_text(label, "35");
+  lv_label_set_text_fmt(label, "%d", 33);
   lv_obj_set_style_text_color(label, lv_color_hex(UI_COLOR_RED), 0);
   lv_obj_set_style_text_font(label, &lv_font_montserrat_36_custom, 0);
 
   label = lv_label_create(lv_scr_act());
   lv_obj_align(label, LV_ALIGN_CENTER, 40, -1);
-  char buf[4];
-  lv_snprintf(buf, sizeof(buf), "%d", CRS_Settings.targetValue);
-  lv_label_set_text(label, buf);
+  lv_label_set_text_fmt(label, "%d", CRS_Settings.targetValue);
   lv_obj_set_style_text_color(label, lv_color_hex(UI_COLOR_YELLOW), 0);
   lv_obj_set_style_text_font(label, &lv_font_montserrat_36_custom, 0);
 
