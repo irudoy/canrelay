@@ -25,6 +25,7 @@
 #include "lcd_lvgl.h"
 #include "hw.h"
 #include "ui.h"
+#include "comm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -106,10 +107,11 @@ int main(void)
   MX_TIM8_Init();
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-  lv_init(); // should init first for msg handlers
+  lv_init();
   HW_Init();
   LCD_Init();
   UI_Init();
+  COMM_init();
   HW_LCDBacklightEnable();
   /* USER CODE END 2 */
 
@@ -118,6 +120,7 @@ int main(void)
   while (1)
   {
     HW_Tick();
+    UI_Tick();
     LCD_Tick();
     /* USER CODE END WHILE */
 
@@ -198,7 +201,7 @@ static void MX_CAN1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CAN1_Init 2 */
-
+  COMM_setupCANFilter();
   /* USER CODE END CAN1_Init 2 */
 
 }

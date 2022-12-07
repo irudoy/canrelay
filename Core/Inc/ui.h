@@ -14,6 +14,7 @@
 #define LV_CUSTOM_SYMBOL_SLIDERS "\xEF\x87\x9E" /*61918, 0xF1DE*/
 #define LV_CUSTOM_SYMBOL_NETWORK_WIRED "\xEF\x9B\xBF" /*63231, 0xF6FF*/
 
-void UI_Init();
+void UI_Init(void);
+void UI_Tick(void);
 
 #endif /* INC_UI_H_ */

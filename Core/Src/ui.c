@@ -1,12 +1,16 @@
 #include "ui.h"
 #include "settings.h"
 #include "hw.h"
+#include "comm.h"
 #include "../../lvgl/lvgl.h"
 
 extern int16_t HW_encoderDiff;
 extern lv_indev_state_t HW_encoderBtnState;
 extern canrelay_settings_t CRS_Settings;
+extern uint8_t COMM_CANRxData[8];
 
+static uint16_t prevCurrentDataRaw;
+static lv_obj_t * currentValueLabel;
 static lv_obj_t * page_settings;
 static lv_indev_drv_t indev_drv;
 static lv_indev_t * indev_encoder;
@@ -296,11 +300,11 @@ static void UI_RenderHomeScreen() {
   lv_obj_align(label, LV_ALIGN_TOP_MID, 40, 5);
   lv_label_set_text(label, "Target:");
 
-  label = lv_label_create(lv_scr_act());
-  lv_obj_align(label, LV_ALIGN_CENTER, -40, -1);
-  lv_label_set_text_fmt(label, "%d", 33);
-  lv_obj_set_style_text_color(label, lv_color_hex(UI_COLOR_RED), 0);
-  lv_obj_set_style_text_font(label, &lv_font_montserrat_36_custom, 0);
+  currentValueLabel = lv_label_create(lv_scr_act());
+  lv_obj_align(currentValueLabel, LV_ALIGN_CENTER, -40, -1);
+  lv_label_set_text_fmt(currentValueLabel, "%d", 33);
+  lv_obj_set_style_text_color(currentValueLabel, lv_color_hex(UI_COLOR_RED), 0);
+  lv_obj_set_style_text_font(currentValueLabel, &lv_font_montserrat_36_custom, 0);
 
   label = lv_label_create(lv_scr_act());
   lv_obj_align(label, LV_ALIGN_CENTER, 40, -1);
@@ -340,4 +344,12 @@ void UI_Init() {
   lv_indev_set_group(indev_encoder, group);
 
   UI_RenderHomeScreen();
+}
+
+void UI_Tick() {
+  uint16_t value = (COMM_CANRxData[1] << 8) | COMM_CANRxData[0];
+  if (value != prevCurrentDataRaw) {
+    prevCurrentDataRaw = value;
+    lv_label_set_text_fmt(currentValueLabel, "%d", value);
+  }
 }
