@@ -365,25 +365,28 @@ void UI_Init() {
   // R2 = 45300
   //
 
-  double CONST_VREF = 4.97;
-  double CONST_SR = 2600; // 2200
-  double CONST_R1 = 44864;
-  double CONST_R2 = 2480;
-  double CONST_R3 = 89.8;
+  // double CONST_VREF = 4.97;
+  // double CONST_SR = 2600; // 2200
+  // double CONST_R1 = 44864;
+  // double CONST_R2 = 2480;
+  // double CONST_R3 = 89.8;
+  // ntc_shh_obj.value_1 = (double) CONST_R1 / (CONST_SR + CONST_R1) * CONST_VREF * 1000;
+  // ntc_shh_obj.value_2 = (double) CONST_R2 / (CONST_SR + CONST_R2) * CONST_VREF * 1000;
+  // ntc_shh_obj.value_3 = (double) CONST_R3 / (CONST_SR + CONST_R3) * CONST_VREF * 1000;
+  // ntc_shh_obj.temp_c_1 = -40;
+  // ntc_shh_obj.temp_c_2 = 20;
+  // ntc_shh_obj.temp_c_3 = 130;
 
-  ntc_shh_obj.value_1 = (double) CONST_R1 / (CONST_SR + CONST_R1) * CONST_VREF * 1000;
-  ntc_shh_obj.value_2 = (double) CONST_R2 / (CONST_SR + CONST_R2) * CONST_VREF * 1000;
-  ntc_shh_obj.value_3 = (double) CONST_R3 / (CONST_SR + CONST_R3) * CONST_VREF * 1000;
-  ntc_shh_obj.temp_c_1 = -40;
-  ntc_shh_obj.temp_c_2 = 20;
-  ntc_shh_obj.temp_c_3 = 130;
+  ntc_shh_obj.value_1 = 2785;
+  ntc_shh_obj.value_2 = 1750;
+  ntc_shh_obj.value_3 = 273;
+  ntc_shh_obj.temp_c_1 = 9;
+  ntc_shh_obj.temp_c_2 = 35;
+  ntc_shh_obj.temp_c_3 = 123;
 
-  // ntc_shh_obj.value_1 = 2785;
-  // ntc_shh_obj.value_2 = 1750;
-  // ntc_shh_obj.value_3 = 273;
-  // ntc_shh_obj.temp_c_1 = 9;
-  // ntc_shh_obj.temp_c_2 = 35;
-  // ntc_shh_obj.temp_c_3 = 123;
+  // ntc_shh_obj.value_1 = 3043; // 2500.0 / (2200.0 + 2500.0) * 4.97 * 1000.0;
+  // ntc_shh_obj.temp_c_1 = 20;
+  // ntc_shh_obj.b_coefficient = 2550;
 
   NTC_InitSteinhartHart(&ntc_shh_obj);
 }
@@ -395,6 +398,7 @@ void UI_Tick() {
       prevCurrentDataRaw = value;
 
       double tc = NTC_GetTempCSteinhartHart(&ntc_shh_obj, value);
+      // double tc = NTC_GetTempCSteinhartHartBParam(&ntc_shh_obj, value);
       lv_label_set_text_fmt(currentValueLabel, "%d", (int16_t) tc);
       // lv_label_set_text_fmt(currentValueLabel, "%d", (int16_t) value);
     }
