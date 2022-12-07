@@ -2,15 +2,15 @@
 #include "settings.h"
 #include "hw.h"
 #include "comm.h"
+#include "ntc.h"
 #include "../../lvgl/lvgl.h"
-
-#include <math.h>
 
 extern int16_t HW_encoderDiff;
 extern lv_indev_state_t HW_encoderBtnState;
 extern canrelay_settings_t CRS_Settings;
 extern uint8_t COMM_CANRxData[8];
 
+static ui_screens_t current_screen = UI_SCREEN_HOME;
 static uint16_t prevCurrentDataRaw;
 static lv_obj_t * currentValueLabel;
 static lv_obj_t * page_settings;
@@ -45,6 +45,7 @@ static void showMenuHandler(lv_event_t * e) {
 
 static void UI_RenderDebugScreen() {
   lv_obj_clean(lv_scr_act());
+  current_screen = UI_SCREEN_DEBUG;
 
   lv_obj_t * dummy = lv_btn_create(lv_scr_act());
   lv_obj_add_event_cb(dummy, showMenuHandler, LV_EVENT_CLICKED, NULL);
@@ -71,6 +72,7 @@ static void anim_size_cb(void * var, int32_t v) {
 
 static void UI_RenderDemoScreen() {
   lv_obj_clean(lv_scr_act());
+  current_screen = UI_SCREEN_DEMO;
 
   lv_obj_t * dummy = lv_btn_create(lv_scr_act());
   lv_obj_add_event_cb(dummy, showMenuHandler, LV_EVENT_CLICKED, NULL);
@@ -168,6 +170,7 @@ static void targetValueSpinboxChangeHandler(lv_event_t * e) {
 
 static void UI_RenderMenu() {
   lv_obj_clean(lv_scr_act());
+  current_screen = UI_SCREEN_MENU;
 
   lv_obj_t * menu = lv_menu_create(lv_scr_act());
   lv_obj_set_size(menu, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
@@ -287,6 +290,7 @@ static void UI_RenderMenu() {
 
 static void UI_RenderHomeScreen() {
   lv_obj_clean(lv_scr_act());
+  current_screen = UI_SCREEN_HOME;
 
   lv_obj_t * dummy = lv_btn_create(lv_scr_act());
   lv_obj_add_event_cb(dummy, showMenuHandler, LV_EVENT_LONG_PRESSED, NULL);
@@ -334,6 +338,8 @@ static void UI_RenderHomeScreen() {
   }
 }
 
+static ntc_steinhart_hart_settings_t ntc_shh_obj;
+
 void UI_Init() {
   lv_indev_drv_init(&indev_drv);
   indev_drv.type = LV_INDEV_TYPE_ENCODER;
@@ -346,85 +352,51 @@ void UI_Init() {
   lv_indev_set_group(indev_encoder, group);
 
   UI_RenderHomeScreen();
-}
-
-// Vout = R2/(R1+R2)*Vin
-// Vin = 4.97V
-// R1 = 2200
-// R2 = 45300
-
-volatile static int16_t TC1;
-volatile static double V1;
-volatile static int16_t TC2;
-volatile static double V2;
-volatile static int16_t TC3;
-volatile static double V3;
-
-volatile static double TK1;
-volatile static double TK2;
-volatile static double TK3;
-volatile static double LNV1;
-volatile static double LNV2;
-volatile static double LNV3;
-
-volatile static double LNV12DIFF;
-volatile static double LNV13DIFF;
-volatile static double TK12E;
-volatile static double TK13E;
-
-volatile static double CoefC;
-volatile static double CoefB;
-volatile static double CoefA;
-
-#define CONST_VREF (4.97)
-#define CONST_SR 2200
-#define CONST_R1 44864 // 45303
-#define CONST_R2 2480 // 2500
-#define CONST_R3 (89.8) // 89
-
-void UI_Tick() {
-  TC1 = -40;
-  V1 = (double) CONST_R1 / (CONST_SR + CONST_R1) * CONST_VREF * 1000;
-  // TC2 = 20;
-  // V2 = (double) CONST_R2 / (CONST_SR + CONST_R2) * CONST_VREF * 1000;
-  // TC3 = 130;
-  // V3 = (double) CONST_R3 / (CONST_SR + CONST_R3) * CONST_VREF * 1000;
-  // TC1 = 9;
-  // V1 = 2785;
-  TC2 = 35;
-  V2 = 1750;
-  TC3 = 123;
-  V3 = 273;
-
-  TK1 = TC1 + 273.15;
-  TK2 = TC2 + 273.15;
-  TK3 = TC3 + 273.15;
-
-  LNV1 = log(V1);
-  LNV2 = log(V2);
-  LNV3 = log(V3);
-
-  LNV12DIFF = LNV1 - LNV2;
-  LNV13DIFF = LNV1 - LNV3;
-  TK12E = (1 / TK1) - (1 / TK2);
-  TK13E = (1 / TK1) - (1 / TK3);
-
-  CoefC = (TK12E - LNV12DIFF * TK13E / LNV13DIFF) / ((pow(LNV1, 3) - pow(LNV2, 3)) - LNV12DIFF * (pow(LNV1, 3) - pow(LNV3, 3)) / LNV13DIFF);
-  CoefB = (TK12E - CoefC * (pow(LNV1, 3) - pow(LNV2, 3))) / LNV12DIFF;
-  CoefA = 1 / TK1 - CoefC * pow(LNV1, 3) - CoefB * LNV1;
 
   // options:
   // 0) CAN Address
   // 1) size: 1 or 2 bytes
   // 2) byte position N
   // 3) endianness
+  //
+  // Vout = R2/(R1+R2)*Vin
+  // Vin = 4.97V
+  // R1 = 2200
+  // R2 = 45300
+  //
 
-  uint16_t value = (COMM_CANRxData[0] << 8) | COMM_CANRxData[1];
-  if (value != prevCurrentDataRaw) {
-    prevCurrentDataRaw = value;
+  double CONST_VREF = 4.97;
+  double CONST_SR = 2600; // 2200
+  double CONST_R1 = 44864;
+  double CONST_R2 = 2480;
+  double CONST_R3 = 89.8;
 
-    double tc = 1.0 / (CoefA + CoefB * log(value) + CoefC * pow(log(value), 3)) - 273.15;
-    lv_label_set_text_fmt(currentValueLabel, "%d", (int16_t) tc);
-    // lv_label_set_text_fmt(currentValueLabel, "%d", (int16_t) value);
+  ntc_shh_obj.value_1 = (double) CONST_R1 / (CONST_SR + CONST_R1) * CONST_VREF * 1000;
+  ntc_shh_obj.value_2 = (double) CONST_R2 / (CONST_SR + CONST_R2) * CONST_VREF * 1000;
+  ntc_shh_obj.value_3 = (double) CONST_R3 / (CONST_SR + CONST_R3) * CONST_VREF * 1000;
+  ntc_shh_obj.temp_c_1 = -40;
+  ntc_shh_obj.temp_c_2 = 20;
+  ntc_shh_obj.temp_c_3 = 130;
+
+  // ntc_shh_obj.value_1 = 2785;
+  // ntc_shh_obj.value_2 = 1750;
+  // ntc_shh_obj.value_3 = 273;
+  // ntc_shh_obj.temp_c_1 = 9;
+  // ntc_shh_obj.temp_c_2 = 35;
+  // ntc_shh_obj.temp_c_3 = 123;
+
+  NTC_InitSteinhartHart(&ntc_shh_obj);
+}
+
+void UI_Tick() {
+  if (current_screen == UI_SCREEN_HOME) {
+    uint16_t value = (COMM_CANRxData[0] << 8) | COMM_CANRxData[1];
+    if (value != prevCurrentDataRaw) {
+      prevCurrentDataRaw = value;
+
+      double tc = NTC_GetTempCSteinhartHart(&ntc_shh_obj, value);
+      lv_label_set_text_fmt(currentValueLabel, "%d", (int16_t) tc);
+      // lv_label_set_text_fmt(currentValueLabel, "%d", (int16_t) value);
+    }
   }
 }

@@ -1,6 +1,13 @@
 #ifndef INC_UI_H_
 #define INC_UI_H_
 
+typedef enum {
+  UI_SCREEN_HOME = 0,
+  UI_SCREEN_MENU,
+  UI_SCREEN_DEBUG,
+  UI_SCREEN_DEMO,
+} ui_screens_t;
+
 #define UI_COLOR_RED 0xfb3f62
 #define UI_COLOR_YELLOW 0xfde218
 #define UI_COLOR_BLUE 0x0a6eff
